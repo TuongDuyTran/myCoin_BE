@@ -1,0 +1,1 @@
+import "../client/vng/models/index.js";
