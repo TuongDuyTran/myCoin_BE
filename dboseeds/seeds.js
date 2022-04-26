@@ -1,1 +1,1 @@
-import "../client/vng/models/index.js";
+import "../models/index.js";

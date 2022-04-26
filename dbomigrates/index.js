@@ -1,4 +1,4 @@
-import Feed from "./vng/Feed.js";
+// import Feed from "./vng/Feed.js";
 // import removeTestTable from "./common/removeTestTable.js";
 import DBO from 'dbo';
 const { getConnect, dbo } = DBO;
@@ -7,7 +7,7 @@ export default {
     Up: () => {
         console.log(":::DO MIGRATE");
         return Promise.all([
-            Feed.Up(queryInterface)
+            // Feed.Up(queryInterface)
         ]);
     }
 };

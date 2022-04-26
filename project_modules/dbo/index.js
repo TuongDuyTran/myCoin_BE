@@ -23,7 +23,8 @@ const getConnect = function () {
             dialectOptions: {
                 useUTC: false, //for reading from database
                 dateStrings: true,
-                typeCast: true
+                typeCast: true,
+                supportBigNumbers: true
             },
             timezone: '+07:00' //for writing to database
         });
