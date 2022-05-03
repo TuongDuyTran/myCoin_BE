@@ -7,6 +7,7 @@ import { Block } from "../models/index.js";
 
 const { Op } = pkg;
 class BlockBusiness extends AbstractBusiness {
+
   getModel() {
     return {
       model: dbo.Block,
@@ -37,20 +38,10 @@ class BlockBusiness extends AbstractBusiness {
     }
   }
 
-  async insert(nonce, transaction) {
+  async insert(block) {
     try {
       const { model } = this.getModel();
-      const latestBlock = this.getLatestBlock();
-
-      let newBlock = model.build({
-        [Block.Timestamp]: new Date(),
-        [Block.PrecedingHash]: latestBlock.Hash,
-        [Block.Hash]: this.generateHash(latestBlock.Hash, nonce, transaction),
-        [Block.Nonce]: nonce,
-        [Block.TransactionID]: transaction.ID,
-      }).dataValues;
-
-      newBlock = await model.create(newBlock);
+      let newBlock = await model.create(block);
       if (newBlock[Block.ID] === null || newBlock[Block.ID] === undefined) {
         throw new ServerException("Can't insert block");
       }
@@ -61,8 +52,19 @@ class BlockBusiness extends AbstractBusiness {
     }
   }
 
-  generateHash(precedingHash, nonce, transaction) {
-    return SHA256(precedingHash + nonce + JSON.stringify(transaction)).toString();
+  
+
+  proofOfWork(difficulty, transaction, block) {
+    while (
+        block.Hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")
+    ) {
+        block.Nonce++;
+        block.Hash = this.generateHash(block.Timestamp.toString(), block.PrecedingHash, block.Nonce, transaction);
+    }
+  }
+
+  generateHash(timestamp, precedingHash, nonce, transaction) {
+    return SHA256(timestamp + precedingHash + nonce + JSON.stringify(transaction)).toString();
   }
 }
 
