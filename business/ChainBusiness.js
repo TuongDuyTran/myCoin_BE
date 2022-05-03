@@ -7,9 +7,9 @@ import { Wallet, Block } from "../models/index";
 const { Op } = pkg;
 const { dbo, AbstractBusiness } = DBO;
 class ChainBusiness extends AbstractBusiness {
-    constructor() {
-        this.difficulty = 4;
-    }
+  constructor() {
+    this.difficulty = 4;
+  }
 
   async checkChainValidity() {
     try {
@@ -29,18 +29,21 @@ class ChainBusiness extends AbstractBusiness {
 
   async executeTransaction(senderKey, receiverKey, amount) {
     try {
-      const sender = await WalletBuss.getInfo(senderKey);
-      const receiver = await WalletBuss.getInfo(receiverKey);
-      if (sender?.ID === undefined) {
-        throw new ServerException("Sender invalid");
-      }
-      if (receiver?.ID === undefined) {
-        throw new ServerException("Receiver invalid");
+      if (senderKey !== process.env.PUBLIC_KEY_WALLET) {
+        const sender = await WalletBuss.getInfo(senderKey);
+        if (sender?.ID === undefined) {
+          throw new ServerException("Sender invalid");
+        }
+
+        const senderAmount = await TransactionBuss.getAmount(senderKey);
+        if (senderAmount < amount) {
+          throw new ServerException("Sender amount isn't enough");
+        }
       }
 
-      const senderAmount = await TransactionBuss.getAmount(senderKey);
-      if (senderAmount < amount) {
-        throw new ServerException("Sender amount isn't enough");
+      const receiver = await WalletBuss.getInfo(receiverKey);
+      if (receiver?.ID === undefined) {
+        throw new ServerException("Receiver invalid");
       }
 
       if (await this.checkChainValidity()) {
@@ -49,15 +52,20 @@ class ChainBusiness extends AbstractBusiness {
           receiverKey,
           amount
         );
-        
+
         const latestBlock = await BlockBuss.getLatestBlock();
         const timestamp = new Date();
         const newBlock = dbo.Block.build({
-            [Block.Timestamp]: timestamp,
-            [Block.PrecedingHash]: latestBlock.Hash,
-            [Block.Hash]: BlockBuss.generateHash(timestamp.toString(), latestBlock.Hash, 0, newTrans),
-            [Block.Nonce]: 0,
-            [Block.TransactionID]: newTrans.ID
+          [Block.Timestamp]: timestamp,
+          [Block.PrecedingHash]: latestBlock.Hash,
+          [Block.Hash]: BlockBuss.generateHash(
+            timestamp.toString(),
+            latestBlock.Hash,
+            0,
+            newTrans
+          ),
+          [Block.Nonce]: 0,
+          [Block.TransactionID]: newTrans.ID,
         }).dataValues;
         BlockBuss.proofOfWork(this.difficulty, newTrans, newBlock);
         return await BlockBuss.insert(newBlock);

@@ -29,6 +29,7 @@
         "mustlog": "file:project_modules/mustlog",
         "mysql2": "^2.2.5",
         "p_exception": "file:project_modules/p_exception",
+        "randomstring": "^1.2.2",
         "rss-parser": "^3.12.0",
         "sequelize": "^6.6.5",
         "sequelize-cli": "^6.2.0",

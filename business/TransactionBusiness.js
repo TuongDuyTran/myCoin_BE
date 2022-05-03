@@ -18,8 +18,8 @@ class TransactionBusiness extends AbstractBusiness {
       const trans = await model.findAll({
         where: {
           [Op.and]: {
-            [Transaction.SenderPublicKey]: key,
-          },
+            [Transaction.SenderPublicKey]: key
+          }
         },
       }).dataValues;
 
@@ -31,8 +31,8 @@ class TransactionBusiness extends AbstractBusiness {
       trans = await model.findAll({
         where: {
           [Op.and]: {
-            [Transaction.ReceiverPublicKey]: key,
-          },
+            [Transaction.ReceiverPublicKey]: key
+          }
         },
       }).dataValues;
       let totalReceived = 0;
