@@ -1,21 +1,24 @@
 import { Router } from 'express';
 import { validate, handler } from "../../middleware/controller.js";
 import { express } from '../../global_class/application.js';
-import BlockBuss from '../../business/BlockBusiness.js';
-import ChainBuss from '../../business/ChainBusiness.js';
+import { BlockBuss, ChainBuss, WalletBuss } from '../../business/index.js';
 
 let routes = Router();
-
-routes.get('/test', (req, res) => {
-    res.send("successfully!");
-});
-
-routes.get('/getLatestBlock', validate([]), handler(BlockBuss.getLatestBlock.bind(BlockBuss)));
 
 routes.post('/executeTransaction', validate([
     'body string senderKey',
     'body string receiverKey',
     'body integer amount'
 ]), handler(ChainBuss.executeTransaction.bind(ChainBuss)));
+
+routes.post('/connectWallet', validate([
+    'body string publicKey',
+    'body string privateKey'
+]), handler(WalletBuss.connect.bind(WalletBuss)));
+
+routes.post('/createWallet', validate([
+    'body string name',
+    'body integer amount'
+]), handler(WalletBuss.create.bind(WalletBuss)));
 
 express.use('/api/my-coin', routes);
