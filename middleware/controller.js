@@ -4,7 +4,6 @@ import { ServerException, IException, ClientException } from "p_exception";
 import Multer from "multer";
 
 function _doValidation(req, res, next) {
-    req.method === "GET" ? log.info(req.query) : log.info(req.body);
     if (this !== null) {
         let inputParams = [];
         for (let i = 0; i < this.length; i++) {
