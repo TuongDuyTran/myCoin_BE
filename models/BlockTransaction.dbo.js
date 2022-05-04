@@ -1,7 +1,7 @@
 import DataTypes from "sequelize";
 
-const Transaction = {
-  tableName: "Transaction",
+const BlockTransaction = {
+  tableName: "BlockTransaction",
   tableInfo: {
     ID:{
       type: DataTypes.INTEGER,
@@ -20,6 +20,10 @@ const Transaction = {
     ReceiverPublicKey: {
       type: DataTypes.TEXT,
       allowNull: false
+    },
+    Timestamp: {
+      type: DataTypes.DATE,
+      allowNull: false,
     }
   }
 };

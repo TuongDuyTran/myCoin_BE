@@ -17,8 +17,8 @@ class BlockBusiness extends AbstractBusiness {
   async getAllBlock() {
     try {
         const { model } = this.getModel();
-        const allBlock = await model.findAll();
-        return allBlock.dataValues;
+        const allBlock = await model.findAll().dataValues;
+        return allBlock;
       } catch (e) {
         return new ServerException(e.message);
       }
@@ -32,7 +32,7 @@ class BlockBusiness extends AbstractBusiness {
         order: [["ID", "DESC"]],
       });
 
-      return latestBlock.dataValues;
+      return latestBlock;
     } catch (e) {
       return new ServerException(e.message);
     }
@@ -41,7 +41,8 @@ class BlockBusiness extends AbstractBusiness {
   async insert(block) {
     try {
       const { model } = this.getModel();
-      let newBlock = await model.create(block);
+      block.Nonce = block.Nonce.toString();
+      const newBlock = await model.create(block);
       if (newBlock[Block.ID] === null || newBlock[Block.ID] === undefined) {
         throw new ServerException("Can't insert block");
       }
@@ -51,8 +52,6 @@ class BlockBusiness extends AbstractBusiness {
       return new ServerException(e.message);
     }
   }
-
-  
 
   proofOfWork(difficulty, transaction, block) {
     while (

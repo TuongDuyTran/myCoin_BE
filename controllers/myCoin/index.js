@@ -11,6 +11,10 @@ routes.post('/executeTransaction', validate([
     'body integer amount'
 ]), handler(ChainBuss.executeTransaction.bind(ChainBuss)));
 
+routes.post('/getHistory', validate([
+    'body string publicKey'
+]), handler(ChainBuss.getHistory.bind(ChainBuss)));
+
 routes.post('/connectWallet', validate([
     'body string publicKey',
     'body string privateKey'
@@ -18,7 +22,13 @@ routes.post('/connectWallet', validate([
 
 routes.post('/createWallet', validate([
     'body string name',
-    'body integer amount'
+    'body integer initAmount'
 ]), handler(WalletBuss.create.bind(WalletBuss)));
+
+routes.post('/getInfo', validate([
+    'body string publicKey'
+]), handler(WalletBuss.getInfo.bind(WalletBuss)));
+
+routes.get('/getAllBlock', validate([]), handler(BlockBuss.getAllBlock.bind(BlockBuss)));
 
 express.use('/api/my-coin', routes);

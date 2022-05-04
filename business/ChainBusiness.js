@@ -1,14 +1,16 @@
 import DBO from "dbo";
 import pkg from "sequelize";
-import { ClientException, ServerException } from "p_exception";
-import { BlockBuss, WalletBuss, TransactionBuss } from "./index";
-import { Wallet, Block } from "../models/index";
+import { ServerException } from "p_exception";
+import { BlockBuss, WalletBuss, BlockTransactionBuss } from "./index.js";
+import { Block, BlockTransaction } from "../models/index.js";
 
 const { Op } = pkg;
 const { dbo, AbstractBusiness } = DBO;
 class ChainBusiness extends AbstractBusiness {
-  constructor() {
-    this.difficulty = 4;
+  getModel() {
+    return {
+      model: "Chain",
+    };
   }
 
   async checkChainValidity() {
@@ -30,30 +32,28 @@ class ChainBusiness extends AbstractBusiness {
   async executeTransaction(senderKey, receiverKey, amount) {
     try {
       if (senderKey !== process.env.PUBLIC_KEY_WALLET) {
-        const sender = await WalletBuss.getInfo(senderKey);
+        const sender = (await WalletBuss.getInfo(senderKey)).dataValues;
         if (sender?.ID === undefined) {
           throw new ServerException("Sender invalid");
         }
 
-        const senderAmount = await TransactionBuss.getAmount(senderKey);
+        const senderAmount = (await BlockTransactionBuss.getAmount(senderKey))
+          .dataValues;
         if (senderAmount < amount) {
           throw new ServerException("Sender amount isn't enough");
         }
       }
 
-      const receiver = await WalletBuss.getInfo(receiverKey);
+      const receiver = (await WalletBuss.getInfo(receiverKey)).dataValues;
       if (receiver?.ID === undefined) {
         throw new ServerException("Receiver invalid");
       }
 
       if (await this.checkChainValidity()) {
-        const newTrans = await TransactionBuss.insert(
-          senderKey,
-          receiverKey,
-          amount
-        );
-
-        const latestBlock = await BlockBuss.getLatestBlock();
+        const newTrans = (
+          await BlockTransactionBuss.insert(senderKey, receiverKey, amount)
+        ).dataValues;
+        const latestBlock = (await BlockBuss.getLatestBlock()).dataValues;
         const timestamp = new Date();
         const newBlock = dbo.Block.build({
           [Block.Timestamp]: timestamp,
@@ -65,13 +65,25 @@ class ChainBusiness extends AbstractBusiness {
             newTrans
           ),
           [Block.Nonce]: 0,
-          [Block.TransactionID]: newTrans.ID,
+          [Block.TransactionID]: newTrans[BlockTransaction.ID],
         }).dataValues;
-        BlockBuss.proofOfWork(this.difficulty, newTrans, newBlock);
+        BlockBuss.proofOfWork(
+          parseInt(process.env.DIFFICULTY),
+          newTrans,
+          newBlock
+        );
         return await BlockBuss.insert(newBlock);
       } else {
         throw new ServerException("Blockchain invalid !!!");
       }
+    } catch (e) {
+      return new ServerException(e.message);
+    }
+  }
+
+  async getHistory(publicKey) {
+    try {
+      return await BlockTransactionBuss.getHistory(publicKey);
     } catch (e) {
       return new ServerException(e.message);
     }

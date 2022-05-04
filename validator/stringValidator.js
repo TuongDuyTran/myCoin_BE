@@ -7,9 +7,9 @@ function htmlEntities(str) {
 export class StringValidator extends AbstractValidator{
 
     _doValid() {
-        if(this.value !== null) {
-            this.value = htmlEntities(this.value);
-        }
+        // if(this.value !== null) {
+        //     this.value = htmlEntities(this.value);
+        // }
         return true;
     }
 }

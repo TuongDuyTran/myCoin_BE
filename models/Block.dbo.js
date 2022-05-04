@@ -1,5 +1,4 @@
 import DataTypes from "sequelize";
-import Transaction from "./Transaction.js";
 
 const Block = {
   tableName: "Block",
@@ -23,21 +22,12 @@ const Block = {
       allowNull: true,
     },
     Nonce: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.TEXT,
       allowNull: false,
     },
     TransactionID: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-  },
-  relationship: function (dbo) {
-    this.hasMany(dbo.Transaction, {
-      as: "Transaction",
-      foreignKey: Transaction.ID,
-    });
-    dbo.Transaction.belongsTo(this, {
-      foreignKey: Transaction.ID,
-    });
-  },
+  }
 };

@@ -1,6 +1,6 @@
 import DBO from "dbo";
 import pkg from "sequelize";
-import { ClientException, ServerException } from "p_exception";
+import { ServerException } from "p_exception";
 import { Wallet } from "../models/index.js";
 import CryptoJS from "crypto-js";
 import RandomString from "randomstring";
@@ -17,15 +17,16 @@ class WalletBusiness extends AbstractBusiness {
 
   async getInfo(publicKey) {
     try {
-        const { model } = this.getModel();
-        const user = await model.findOne({
-            where: {
-                [Op.and]: {
-                    [Wallet.PublicKey]: publicKey
-                }
-            }
-        }).dataValues;
-        return user;
+      const { model } = this.getModel();
+      const user = await model.findOne({
+        where: {
+          [Op.and]: {
+            [Wallet.PublicKey]: publicKey,
+          },
+        },
+      });
+
+      return user;
     } catch (e) {
       return new ServerException(e.message);
     }
@@ -33,26 +34,34 @@ class WalletBusiness extends AbstractBusiness {
 
   async create(name, initAmount = 0) {
     try {
-        const { model } = this.getModel();
-        const publicKey = this.encrypt((new Date).toString() + name + this.random());
-        const genPassword = this.encrypt((new Date).toString() + name + this.random());
-        const privateKey = this.encrypt(genPassword);
-        const newWallet = await model.create({
-            [Wallet.Name]: name,
-            [Wallet.PublicKey]: publicKey,
-            [Wallet.PrivateKey]: privateKey
-        });
+      const { model } = this.getModel();
+      const publicKey = this.encrypt(
+        new Date().toString() + name + this.random()
+      );
+      const genPassword = this.encrypt(
+        new Date().toString() + name + this.random()
+      );
+      const privateKey = this.encrypt(genPassword);
+      const newWallet = await model.create({
+        [Wallet.Name]: name,
+        [Wallet.PublicKey]: publicKey,
+        [Wallet.PrivateKey]: privateKey,
+      });
 
-        if (newWallet[Wallet.ID] === null || newWallet[Wallet.ID] === undefined) {
-            throw new ServerException("Can't create wallet");
-        }
+      if (newWallet[Wallet.ID] === null || newWallet[Wallet.ID] === undefined) {
+        throw new ServerException("Can't create wallet");
+      }
 
-        await ChainBuss.executeTransaction(process.env.PUBLIC_KEY_WALLET, newWallet[Wallet.PrivateKey], initAmount);
-        return {
-            name: name,
-            publicKey: publicKey,
-            privateKey: genPassword
-        }
+      await ChainBuss.executeTransaction(
+        process.env.PUBLIC_KEY_WALLET,
+        newWallet[Wallet.PublicKey],
+        initAmount
+      );
+      return {
+        name: name,
+        publicKey: publicKey,
+        privateKey: genPassword,
+      };
     } catch (e) {
       return new ServerException(e.message);
     }
@@ -60,42 +69,52 @@ class WalletBusiness extends AbstractBusiness {
 
   async connect(publicKey, privateKey) {
     try {
-        const { model } = this.getModel();
-        const user = await model.findOne({
-            where: {
-                [Op.and]: {
-                    [Wallet.PublicKey]: publicKey
-                }
-            }
-        }).dataValues;
+      const { model } = this.getModel();
+      const user = await model.findOne({
+        where: {
+          [Op.and]: {
+            [Wallet.PublicKey]: publicKey,
+          }
+        },
+      });
 
-        if (user?.ID === undefined) {
-            throw new ServerException("User isn't exist");
-        }
+      if (user?.ID === undefined) {
+        throw new ServerException("User isn't exist");
+      }
 
-        if (privateKey !== this.decrypt(user.PrivateKey)) {
-            throw new ServerException("Private key incorrect");
-        }
+      if (privateKey !== this.decrypt(user.PrivateKey)) {
+        throw new ServerException("Private key incorrect");
+      }
 
-        return user;
+      return {
+        id: user.ID,
+        publicKey: user.PublicKey,
+        name: user.Name,
+      };
     } catch (e) {
       return new ServerException(e.message);
     }
   }
 
   encrypt(message) {
-    let cipherText = CryptoJS.AES.encrypt(message, process.env.SECRET_KEY_IV).toString();
+    let cipherText = CryptoJS.AES.encrypt(
+      message,
+      process.env.SECRET_KEY_IV
+    ).toString();
     return cipherText;
   }
 
   decrypt(cipherText) {
-    let bytes  = CryptoJS.AES.decrypt(cipherText, process.env.SECRET_KEY_IV);
+    let bytes = CryptoJS.AES.decrypt(cipherText, process.env.SECRET_KEY_IV);
     let originalText = bytes.toString(CryptoJS.enc.Utf8);
     return originalText;
   }
 
   random() {
-      return RandomString.generate();
+    return RandomString.generate({
+      length: 32,
+      charset: "alphabetic",
+    });
   }
 }
 
