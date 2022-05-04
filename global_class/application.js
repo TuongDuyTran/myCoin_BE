@@ -3,8 +3,10 @@ import Express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import path from "path";
+import cors from "cors";
 
 export const express = Express();
+express.use(cors());
 dotenv.config();
 
 //Express setting

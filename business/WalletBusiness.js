@@ -4,7 +4,7 @@ import { ServerException } from "p_exception";
 import { Wallet } from "../models/index.js";
 import CryptoJS from "crypto-js";
 import RandomString from "randomstring";
-import { ChainBuss } from "./index.js";
+import { ChainBuss, BlockTransactionBuss } from "./index.js";
 
 const { Op } = pkg;
 const { dbo, AbstractBusiness } = DBO;
@@ -19,12 +19,18 @@ class WalletBusiness extends AbstractBusiness {
     try {
       const { model } = this.getModel();
       const user = await model.findOne({
+        attributes: [['ID', 'id'], ['Name', 'name'], ['PublicKey', 'publicKey']],
         where: {
           [Op.and]: {
             [Wallet.PublicKey]: publicKey,
           },
         },
       });
+      console.log(user);
+      if (user?.dataValues?.id) {
+        console.log('vao day ne');
+        user.dataValues.amount = await BlockTransactionBuss.getAmount(publicKey);
+      }
 
       return user;
     } catch (e) {
@@ -86,10 +92,13 @@ class WalletBusiness extends AbstractBusiness {
         throw new ServerException("Private key incorrect");
       }
 
+      const amount = await BlockTransactionBuss.getAmount(publicKey);
+
       return {
         id: user.ID,
         publicKey: user.PublicKey,
         name: user.Name,
+        amount: amount
       };
     } catch (e) {
       return new ServerException(e.message);

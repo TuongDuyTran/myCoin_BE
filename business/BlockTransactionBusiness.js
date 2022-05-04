@@ -15,30 +15,30 @@ class BlockTransactionBusiness extends AbstractBusiness {
   async getAmount(key) {
     try {
       const { model } = this.getModel();
-      const trans = await model.findAll({
+      const transSend = await model.findAll({
         where: {
           [Op.and]: {
             [BlockTransaction.SenderPublicKey]: key,
           },
         },
       });
-
       let totalSended = 0;
-      if (trans.length > 0) {
-        totalSended = trans.reduce((total, current) => total + current.Amount);
+      if (transSend.length > 0) {
+        totalSended = transSend.reduce((total, current) => total + current.dataValues.Amount);
       }
 
-      trans = await model.findAll({
+      const transReceive = await model.findAll({
         where: {
           [Op.and]: {
             [BlockTransaction.ReceiverPublicKey]: key,
           },
         },
-      });
+      })
       let totalReceived = 0;
-      if (trans.length > 0) {
-        totalReceived = trans.reduce(
-          (total, current) => total + current.Amount
+      if (transReceive.length > 0) {
+        totalReceived = transReceive.reduce(
+          (total, current) => total + current.dataValues.Amount,
+          0
         );
       }
 

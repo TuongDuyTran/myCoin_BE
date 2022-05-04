@@ -37,8 +37,7 @@ class ChainBusiness extends AbstractBusiness {
           throw new ServerException("Sender invalid");
         }
 
-        const senderAmount = (await BlockTransactionBuss.getAmount(senderKey))
-          .dataValues;
+        const senderAmount = await BlockTransactionBuss.getAmount(senderKey);
         if (senderAmount < amount) {
           throw new ServerException("Sender amount isn't enough");
         }
