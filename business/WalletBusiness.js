@@ -26,9 +26,8 @@ class WalletBusiness extends AbstractBusiness {
           },
         },
       });
-      console.log(user);
+
       if (user?.dataValues?.id) {
-        console.log('vao day ne');
         user.dataValues.amount = await BlockTransactionBuss.getAmount(publicKey);
       }
 
@@ -67,6 +66,7 @@ class WalletBusiness extends AbstractBusiness {
         name: name,
         publicKey: publicKey,
         privateKey: genPassword,
+        amount: initAmount
       };
     } catch (e) {
       return new ServerException(e.message);
