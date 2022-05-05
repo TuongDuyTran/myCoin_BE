@@ -57,11 +57,11 @@ class WalletBusiness extends AbstractBusiness {
         throw new ServerException("Can't create wallet");
       }
 
-      await ChainBuss.executeTransaction(
+      console.log(await ChainBuss.executeTransaction(
         process.env.PUBLIC_KEY_WALLET,
         newWallet[Wallet.PublicKey],
         initAmount
-      );
+      ));
       return {
         name: name,
         publicKey: publicKey,

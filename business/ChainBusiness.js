@@ -33,7 +33,7 @@ class ChainBusiness extends AbstractBusiness {
     try {
       if (senderKey !== process.env.PUBLIC_KEY_WALLET) {
         const sender = (await WalletBuss.getInfo(senderKey)).dataValues;
-        if (sender?.ID === undefined) {
+        if (sender?.id === undefined) {
           throw new ServerException("Sender invalid");
         }
 
@@ -44,7 +44,7 @@ class ChainBusiness extends AbstractBusiness {
       }
 
       const receiver = (await WalletBuss.getInfo(receiverKey)).dataValues;
-      if (receiver?.ID === undefined) {
+      if (receiver?.id === undefined) {
         throw new ServerException("Receiver invalid");
       }
 

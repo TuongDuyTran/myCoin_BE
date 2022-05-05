@@ -24,9 +24,9 @@ class BlockTransactionBusiness extends AbstractBusiness {
       });
       let totalSended = 0;
       if (transSend.length > 0) {
-        totalSended = transSend.reduce((total, current) => total + current.dataValues.Amount);
+        totalSended = transSend.reduce((total, current) => total + current.dataValues.Amount, 0);
       }
-
+      
       const transReceive = await model.findAll({
         where: {
           [Op.and]: {
@@ -41,7 +41,7 @@ class BlockTransactionBusiness extends AbstractBusiness {
           0
         );
       }
-
+      
       return totalReceived - totalSended;
     } catch (e) {
       return new ServerException(e.message);
